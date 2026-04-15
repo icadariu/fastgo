@@ -1,0 +1,8 @@
+# binaries
+/fastgo
+fastgo-linux-*
+fastgo-darwin-*
+*.exe
+
+# go build cache (optional)
+*.test
