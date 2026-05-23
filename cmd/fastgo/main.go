@@ -11,6 +11,9 @@ import (
 )
 
 func main() {
+  if HandleVersionFlag() {
+    return
+  }
   urlCount := flag.Int("urlcount", 5, "number of Fast.com target URLs to request")
   parallel := flag.Int("parallel", 8, "number of parallel workers")
   duration := flag.Duration("duration", 12*time.Second, "duration of each test phase")
