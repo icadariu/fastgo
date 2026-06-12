@@ -18,6 +18,14 @@ var (
 	reToken  = regexp.MustCompile(`token\s*:\s*"([^"]+)"`)
 )
 
+// Base URLs for the Fast.com endpoints. Declared as vars (not constants) so
+// tests can redirect them at a local httptest server; production uses the
+// defaults below.
+var (
+	fastBaseURL = "https://fast.com"
+	apiBaseURL  = "https://api.fast.com"
+)
+
 func newClient() *http.Client {
 	tr := &http.Transport{
 		MaxIdleConns:        100,
@@ -34,7 +42,7 @@ func newClient() *http.Client {
 func FetchAppToken(ctx context.Context) (string, error) {
 	c := newClient()
 
-	req, _ := http.NewRequestWithContext(ctx, "GET", "https://fast.com/", nil)
+	req, _ := http.NewRequestWithContext(ctx, "GET", fastBaseURL+"/", nil)
 	resp, err := c.Do(req)
 	if err != nil {
 		return "", err
@@ -53,7 +61,7 @@ func FetchAppToken(ctx context.Context) (string, error) {
 
 	scriptURL := string(m[1])
 	if strings.HasPrefix(scriptURL, "/") {
-		scriptURL = "https://fast.com" + scriptURL
+		scriptURL = fastBaseURL + scriptURL
 	}
 
 	req2, _ := http.NewRequestWithContext(ctx, "GET", scriptURL, nil)
@@ -91,7 +99,8 @@ func FetchTargets(ctx context.Context, token string, urlCount int) ([]string, st
 	c := newClient()
 
 	u := fmt.Sprintf(
-		"https://api.fast.com/netflix/speedtest/v2?https=true&token=%s&urlCount=%d",
+		"%s/netflix/speedtest/v2?https=true&token=%s&urlCount=%d",
+		apiBaseURL,
 		token,
 		urlCount,
 	)
@@ -384,7 +393,11 @@ func MeasureUpload(
 					return
 				}
 
-				atomic.AddInt64(&totalBytes, workerBytes)
+				// Load atomically: the transport writes the request body on a
+				// separate goroutine that may still be incrementing workerBytes
+				// when Do returns (the server responds before the unbounded body
+				// is fully sent).
+				atomic.AddInt64(&totalBytes, atomic.LoadInt64(&workerBytes))
 			}
 		}(i)
 	}
