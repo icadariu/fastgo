@@ -30,9 +30,12 @@ The tool is **pure Go**, requires **no external dependencies**, and runs on:
 
 ```text
 fastgo/
-├── cmd/fastgo/main.go        # CLI entrypoint
+├── cmd/fastgo/
+│   ├── main.go               # CLI entrypoint
+│   └── version.go            # --version flag + injected build metadata
 ├── internal/fastcom/         # Fast.com logic
 │   └── fastcom.go
+├── Makefile                  # help / install targets
 ├── go.mod
 ├── README.md
 └── .gitignore
@@ -72,6 +75,16 @@ fastgo/
     go build -o fastgo-linux-armv7 ./cmd/fastgo
   ```
 
+## Install
+
+`make install` builds the latest source with version metadata injected and installs
+the binary to `$GOPATH/bin` (`~/go/bin`):
+
+```sh
+make help      # list available targets
+make install   # build + install fastgo to ~/go/bin
+```
+
 ## Run
 
 ```sh
@@ -91,3 +104,10 @@ fastgo/
 | `-timeout`  | `120s`  | Overall timeout (token + targets + tests)      |
 | `-progress` | `true`  | Show live progress output                      |
 | `-tick`     | `500ms` | Progress update interval                       |
+| `--version` | —       | Print version and exit                         |
+
+`--version` prints a single line in the form:
+
+```text
+<version> (built DD-MM-YY_HH:MM, commit <short-sha>)
+```
