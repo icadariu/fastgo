@@ -10,5 +10,8 @@ LDFLAGS   := -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X ma
 
 MAIN := ./cmd/fastgo
 
+test: ## run all tests
+	go test ./...
+
 install: ## build and install with version metadata
 	go install $(LDFLAGS) $(MAIN)
